@@ -833,23 +833,41 @@ export function apply(ctx: Context, config: Config) {
               // 尝试撤回等待消息
               try {
                 if (loadingMsg) {
-                  log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}`)
+                  log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}, 数据: ${JSON.stringify(loadingMsg, null, 2)}`);
                   
                   // 根据不同平台适配消息ID提取
-                  let messageId: string | undefined
+                  let messageId: string | undefined;
                   
                   if (typeof loadingMsg === 'string') {
-                    messageId = loadingMsg
-                  } else if (typeof loadingMsg === 'object') {
-                    // 尝试从对象中提取消息ID
-                    messageId = loadingMsg['messageId'] || loadingMsg['id']
+                    messageId = loadingMsg;
+                  } else if (typeof loadingMsg === 'object' && loadingMsg !== null) {
+                    // 尝试各种可能的属性路径获取消息ID
+                    if (Array.isArray(loadingMsg) && loadingMsg.length > 0) {
+                      // 数组格式，尝试获取第一个元素
+                      const firstElement = loadingMsg[0];
+                      if (firstElement && typeof firstElement === 'object') {
+                        messageId = (firstElement as any).messageId || (firstElement as any).id;
+                      } else if (firstElement && typeof firstElement === 'string') {
+                        messageId = firstElement;
+                      }
+                    } else {
+                      // 尝试常见的消息ID属性
+                      const msgObj = loadingMsg as Record<string, any>;
+                      messageId = msgObj['messageId'] || 
+                               msgObj['id'] || 
+                               msgObj['message_id'] || 
+                               (msgObj['data'] && msgObj['data']['messageId']) ||
+                               (msgObj['data'] && msgObj['data']['id']) ||
+                               (msgObj['data'] && msgObj['data']['message_id']);
+                    }
                   }
                   
                   if (messageId) {
-                    await session.bot.deleteMessage(session.channelId, messageId)
-                    log.debug(`成功撤回临时消息`)
+                    log.debug(`找到消息ID: ${messageId}，准备撤回`);
+                    await session.bot.deleteMessage(session.channelId, messageId);
+                    log.debug(`成功撤回临时消息`);
                   } else {
-                    log.warn(`无法获取临时消息ID，撤回失败`)
+                    log.warn(`无法获取临时消息ID，撤回失败，消息对象: ${typeof loadingMsg === 'object' ? JSON.stringify(loadingMsg) : loadingMsg}`);
                   }
                 }
               } catch (deleteError) {
@@ -904,23 +922,41 @@ export function apply(ctx: Context, config: Config) {
             // 尝试撤回等待消息
             try {
               if (loadingMsg) {
-                log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}`)
+                log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}, 数据: ${JSON.stringify(loadingMsg, null, 2)}`);
                 
                 // 根据不同平台适配消息ID提取
-                let messageId: string | undefined
+                let messageId: string | undefined;
                 
                 if (typeof loadingMsg === 'string') {
-                  messageId = loadingMsg
-                } else if (typeof loadingMsg === 'object') {
-                  // 尝试从对象中提取消息ID
-                  messageId = loadingMsg['messageId'] || loadingMsg['id']
+                  messageId = loadingMsg;
+                } else if (typeof loadingMsg === 'object' && loadingMsg !== null) {
+                  // 尝试各种可能的属性路径获取消息ID
+                  if (Array.isArray(loadingMsg) && loadingMsg.length > 0) {
+                    // 数组格式，尝试获取第一个元素
+                    const firstElement = loadingMsg[0];
+                    if (firstElement && typeof firstElement === 'object') {
+                      messageId = (firstElement as any).messageId || (firstElement as any).id;
+                    } else if (firstElement && typeof firstElement === 'string') {
+                      messageId = firstElement;
+                    }
+                  } else {
+                    // 尝试常见的消息ID属性
+                    const msgObj = loadingMsg as Record<string, any>;
+                    messageId = msgObj['messageId'] || 
+                             msgObj['id'] || 
+                             msgObj['message_id'] || 
+                             (msgObj['data'] && msgObj['data']['messageId']) ||
+                             (msgObj['data'] && msgObj['data']['id']) ||
+                             (msgObj['data'] && msgObj['data']['message_id']);
+                  }
                 }
                 
                 if (messageId) {
-                  await session.bot.deleteMessage(session.channelId, messageId)
-                  log.debug(`成功撤回临时消息`)
+                  log.debug(`找到消息ID: ${messageId}，准备撤回`);
+                  await session.bot.deleteMessage(session.channelId, messageId);
+                  log.debug(`成功撤回临时消息`);
                 } else {
-                  log.warn(`无法获取临时消息ID，撤回失败`)
+                  log.warn(`无法获取临时消息ID，撤回失败，消息对象: ${typeof loadingMsg === 'object' ? JSON.stringify(loadingMsg) : loadingMsg}`);
                 }
               }
             } catch (deleteError) {
