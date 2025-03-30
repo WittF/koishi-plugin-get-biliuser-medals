@@ -481,7 +481,30 @@ export function apply(ctx: Context, config: Config) {
             // 加载大航海图标 - 使用正确的目录路径
             const guardIconPath = path.join(iconDir, guardIconFile);
             log.debug(`尝试加载大航海图标: ${guardIconPath}`);
-            const guardIcon = await fs.readFile(guardIconPath);
+            
+            // 尝试多个可能的路径来加载图标
+            let guardIcon;
+            try {
+              // 首先尝试使用配置的路径
+              guardIcon = await fs.readFile(guardIconPath);
+              log.debug(`成功从路径加载图标: ${guardIconPath}`);
+            } catch (pathError) {
+              // 如果失败，尝试使用相对于插件目录的路径
+              const pluginDir = path.resolve(__dirname, '..');
+              const altIconPath = path.join(pluginDir, 'icon', guardIconFile);
+              log.debug(`尝试从替代路径加载图标: ${altIconPath}`);
+              
+              try {
+                guardIcon = await fs.readFile(altIconPath);
+                log.debug(`成功从替代路径加载图标: ${altIconPath}`);
+              } catch (altPathError) {
+                // 如果还是失败，尝试直接从工作目录加载
+                const workDirIconPath = path.join('icon', guardIconFile);
+                log.debug(`尝试从工作目录加载图标: ${workDirIconPath}`);
+                guardIcon = await fs.readFile(workDirIconPath);
+              }
+            }
+            
             const img = await canvas.loadImage(guardIcon);
             
             // 设置图标位置和大小
