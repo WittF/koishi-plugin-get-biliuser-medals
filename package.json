@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-get-biliuser-medals",
   "description": "B站粉丝勋章查询插件，支持文本和图片两种显示模式",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

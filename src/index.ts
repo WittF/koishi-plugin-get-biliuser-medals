@@ -832,11 +832,28 @@ export function apply(ctx: Context, config: Config) {
               
               // 尝试撤回等待消息
               try {
-                if (loadingMsg && typeof loadingMsg === 'string') {
-                  await session.bot.deleteMessage(session.channelId, loadingMsg)
+                if (loadingMsg) {
+                  log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}`)
+                  
+                  // 根据不同平台适配消息ID提取
+                  let messageId: string | undefined
+                  
+                  if (typeof loadingMsg === 'string') {
+                    messageId = loadingMsg
+                  } else if (typeof loadingMsg === 'object') {
+                    // 尝试从对象中提取消息ID
+                    messageId = loadingMsg['messageId'] || loadingMsg['id']
+                  }
+                  
+                  if (messageId) {
+                    await session.bot.deleteMessage(session.channelId, messageId)
+                    log.debug(`成功撤回临时消息`)
+                  } else {
+                    log.warn(`无法获取临时消息ID，撤回失败`)
+                  }
                 }
               } catch (deleteError) {
-                log.warn('撤回等待消息失败', deleteError)
+                log.warn(`撤回等待消息失败: ${deleteError instanceof Error ? deleteError.message : '未知错误'}`, deleteError)
                 // 失败不影响主流程
               }
             } catch (error) {
@@ -886,11 +903,28 @@ export function apply(ctx: Context, config: Config) {
             
             // 尝试撤回等待消息
             try {
-              if (loadingMsg && typeof loadingMsg === 'string') {
-                await session.bot.deleteMessage(session.channelId, loadingMsg)
+              if (loadingMsg) {
+                log.debug(`尝试撤回临时消息，ID类型: ${typeof loadingMsg}`)
+                
+                // 根据不同平台适配消息ID提取
+                let messageId: string | undefined
+                
+                if (typeof loadingMsg === 'string') {
+                  messageId = loadingMsg
+                } else if (typeof loadingMsg === 'object') {
+                  // 尝试从对象中提取消息ID
+                  messageId = loadingMsg['messageId'] || loadingMsg['id']
+                }
+                
+                if (messageId) {
+                  await session.bot.deleteMessage(session.channelId, messageId)
+                  log.debug(`成功撤回临时消息`)
+                } else {
+                  log.warn(`无法获取临时消息ID，撤回失败`)
+                }
               }
             } catch (deleteError) {
-              log.warn('撤回等待消息失败', deleteError)
+              log.warn(`撤回等待消息失败: ${deleteError instanceof Error ? deleteError.message : '未知错误'}`, deleteError)
               // 失败不影响主流程
             }
           } catch (error) {
