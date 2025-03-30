@@ -1,5 +1,65 @@
-# koishi-plugin-get-biliuser-medals
+# get-biliuser-medals
 
-[![npm](https://img.shields.io/npm/v/koishi-plugin-get-biliuser-medals?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-get-biliuser-medals)
+一个用于获取B站用户粉丝勋章信息的Koishi插件。
+
+## 功能介绍
+
+该插件可以查询B站用户的粉丝勋章墙，支持查看用户的所有粉丝勋章或特定UP主的粉丝勋章。
+
+### 主要特点
+
+- 查询用户的全部粉丝勋章
+- 支持筛选查看特定UP主的粉丝勋章
+- 显示勋章等级、亲密度、点亮状态等详细信息
+- 显示UP主的直播状态（直播中、轮播中、未直播）
+- 显示大航海状态（总督、提督、舰长）
+- 适配群聊和私聊不同消息格式
+
+## 使用方法
+
+### 命令格式
+
+```
+getmedals <用户UID> [UP主UID]
+```
+
+### 参数说明
+
+- `用户UID`：**必填**，要查询的B站用户的UID
+- `UP主UID`：**可选**，筛选特定UP主的粉丝勋章
+
+### 示例
+
+1. 查询用户的所有粉丝勋章：
+   ```
+   getmedals 12345678
+   ```
+
+2. 查询用户对特定UP主的粉丝勋章：
+   ```
+   getmedals 12345678 87654321
+   ```
+
+## 配置说明
+
+插件需要配置B站的SESSDATA才能正常使用，可在插件设置中配置：
+
+| 配置项 | 说明 | 类型 | 必填 |
+| ---- | ---- | ---- | ---- |
+| SESSDATA | B站的SESSDATA，用于API认证 | 字符串 | 是 |
+
+### 如何获取SESSDATA
+
+1. 登录B站网页版
+2. 按F12打开开发者工具
+3. 找到Application（应用）标签页
+4. 在左侧找到Cookies > https://www.bilibili.com
+5. 在右侧找到名为SESSDATA的Cookie值
+
+## 注意事项
+
+- 请确保配置的SESSDATA有效且未过期
+- 若API返回-101错误，表示账号未登录，需要更新SESSDATA
+- 部分用户可能将粉丝勋章设为隐私，无法查询
 
 
