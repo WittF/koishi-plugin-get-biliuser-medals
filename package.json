@@ -1,22 +1,50 @@
 {
   "name": "koishi-plugin-get-biliuser-medals",
-  "description": "",
-  "version": "0.0.1",
+  "description": "B站粉丝勋章查询插件，支持文本和图片两种显示模式",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "icon"
   ],
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "test": "koishi test"
+  },
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "bilibili",
+    "medal",
+    "fan-medal"
   ],
-  "devDependencies": {},
+  "koishi": {
+    "description": {
+      "zh": "B站粉丝勋章查询插件，支持文本和图片两种显示模式"
+    },
+    "service": {
+      "required": [],
+      "optional": [
+        "canvas"
+      ]
+    }
+  },
+  "dependencies": {
+    "axios": "^0.27.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
   "peerDependencies": {
-    "koishi": "4.18.7"
-  }
+    "koishi": "^4.18.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WittF/koishi-plugin-get-biliuser-medals.git"
+  },
+  "author": "WittF <WittF@qq.com>"
 }

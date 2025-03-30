@@ -1,2 +1,13 @@
 .DS_Store
 tsconfig.tsbuildinfo
+src/
+docs/
+test/
+tsconfig.json
+.git/
+.gitignore
+.github/
+.vscode/
+.editorconfig
+.gitattributes
+node_modules/

@@ -1,65 +1,86 @@
-# get-biliuser-medals
+# B站粉丝勋章查询 (get-biliuser-medals)
 
-一个用于获取B站用户粉丝勋章信息的Koishi插件。
+适用于 [Koishi](https://koishi.chat) 的B站粉丝勋章查询插件，支持文本和图片两种显示模式。
 
-## 功能介绍
+![示例图片](https://s11.ax1x.com/2024/03/31/pFgVzjA.png)
 
-该插件可以查询B站用户的粉丝勋章墙，支持查看用户的所有粉丝勋章或特定UP主的粉丝勋章。
+## 功能特点
 
-### 主要特点
+- 查询B站用户的所有粉丝勋章
+- 查询指定UP主的粉丝勋章
+- 支持文本和图片两种显示模式
+- 图片模式下显示精美的粉丝勋章卡片，包含完整信息
+- 显示勋章等级、亲密度、今日亲密度上限等详细信息
+- 显示UP主头像、直播状态等信息
+- 支持大航海等级显示（总督/提督/舰长）
+- 自动检测"仅展示佩戴中的粉丝勋章"设置
 
-- 查询用户的全部粉丝勋章
-- 支持筛选查看特定UP主的粉丝勋章
-- 显示勋章等级、亲密度、点亮状态等详细信息
-- 显示UP主的直播状态（直播中、轮播中、未直播）
-- 显示大航海状态（总督、提督、舰长）
-- 适配群聊和私聊不同消息格式
+## 安装方法
+
+### 前置要求
+
+- 安装 [Koishi](https://koishi.chat)
+- 如需图片模式，请安装 `canvas` 插件
+
+### 安装步骤
+
+1. 在 Koishi 插件市场中搜索并安装 `get-biliuser-medals`
+2. 如需图片模式，请同时安装 `canvas` 插件
+3. 配置插件（需要填写B站的SESSDATA）
+4. 重启 Koishi
 
 ## 使用方法
 
-### 命令格式
+### 基本命令
 
 ```
-getmedals <用户UID> [UP主UID]
+getmedals <用户UID>         # 查询指定用户的所有粉丝勋章
+getmedals <用户UID> -i      # 以图片形式查询指定用户的所有粉丝勋章
+getmedals <用户UID> <UP主UID>  # 查询指定用户拥有的特定UP主的粉丝勋章
+getmedals <用户UID> <UP主UID> -i  # 以图片形式查询指定用户拥有的特定UP主的粉丝勋章
+getmedals.help            # 查看帮助信息
 ```
-
-### 参数说明
-
-- `用户UID`：**必填**，要查询的B站用户的UID
-- `UP主UID`：**可选**，筛选特定UP主的粉丝勋章
 
 ### 示例
 
-1. 查询用户的所有粉丝勋章：
-   ```
-   getmedals 12345678
-   ```
-
-2. 查询用户对特定UP主的粉丝勋章：
-   ```
-   getmedals 12345678 87654321
-   ```
+```
+getmedals 114514              # 查询UID为114514的用户的所有粉丝勋章
+getmedals 114514 -i           # 以图片形式查询UID为114514的用户的所有粉丝勋章
+getmedals 114514 1919810      # 查询UID为114514的用户拥有的UID为1919810的UP主的粉丝勋章
+getmedals 114514 1919810 -i   # 以图片形式查询...
+```
 
 ## 配置说明
 
-插件需要配置B站的SESSDATA才能正常使用，可在插件设置中配置：
-
-| 配置项 | 说明 | 类型 | 必填 |
-| ---- | ---- | ---- | ---- |
-| SESSDATA | B站的SESSDATA，用于API认证 | 字符串 | 是 |
+| 配置项 | 类型 | 默认值 | 说明 |
+|-------|------|-------|------|
+| SESSDATA | string | - | B站的SESSDATA，用于API认证 |
+| debugMode | boolean | false | 开启调试模式，将输出更详细的日志信息 |
+| blacklistUIDs | string[] | [] | 禁止查询列表，这些用户的粉丝勋章信息将无法被查询 |
+| imageBackground | string | #ffffff | 图片背景颜色（十六进制色值） |
+| imageWidth | number | 500 | 渲染图片的宽度(像素)，范围300-1000 |
 
 ### 如何获取SESSDATA
 
 1. 登录B站网页版
 2. 按F12打开开发者工具
-3. 找到Application（应用）标签页
-4. 在左侧找到Cookies > https://www.bilibili.com
-5. 在右侧找到名为SESSDATA的Cookie值
+3. 切换到Application(应用程序)或Storage(存储)选项卡
+4. 在左侧找到Cookies，然后找到bilibili.com
+5. 在右侧列表中找到名为SESSDATA的cookie，其值即为所需的SESSDATA
 
 ## 注意事项
 
-- 请确保配置的SESSDATA有效且未过期
-- 若API返回-101错误，表示账号未登录，需要更新SESSDATA
-- 部分用户可能将粉丝勋章设为隐私，无法查询
+1. 必须填写有效的SESSDATA才能查询粉丝勋章信息
+2. SESSDATA有过期时间，过期后需要重新获取并更新
+3. 图片模式需要安装并正确配置`canvas`插件
+4. 用户设置为不公开的粉丝勋章无法被查询
+5. 如果用户设置了"仅展示佩戴中的粉丝勋章"，将只能看到当前佩戴的勋章
+6. 请勿频繁查询，以免触发B站的API限制
 
+## 问题反馈
 
+如有问题或建议，请前往[GitHub仓库](https://github.com/WittF/koishi-plugin-get-biliuser-medals)提交Issue。
+
+## 许可证
+
+MIT License 
