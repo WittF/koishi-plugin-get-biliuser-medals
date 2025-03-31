@@ -733,8 +733,8 @@ export function apply(ctx: Context, config: Config) {
   }
 
   // 注册getmedals命令
-  ctx.command('getmedals <uid:string> [upUid:string]', '获取B站用户粉丝勋章信息')
-    .option('image', '-i', { fallback: true })
+  ctx.command('getmedals <uid:string> [upUid:string]', '获取B站用户粉丝勋章信息')    .option('image', '-i', { fallback: true })
+    .option('image', '-i', { fallback: false })
     .action(async ({ session, options }, uid, upUid) => {
       // 检查options的值和格式
       log.debug(`命令选项原始值: ${JSON.stringify(options)}`)
@@ -758,30 +758,37 @@ export function apply(ctx: Context, config: Config) {
         await sendMessage(session, [h.text('请提供正确的B站UID')])
         return
       }
+
+      // 处理UID前缀
+      const cleanUid = uid.replace(/^UID[：:]\s*/, '')
       
       // 验证UID格式是否为纯数字
-      if (!/^\d+$/.test(uid)) {
+      if (!/^\d+$/.test(cleanUid)) {
         log.warn(`用户提供了非法UID格式: ${uid}`)
         await sendMessage(session, [h.text('请提供正确的B站UID，UID应为纯数字')])
         return
       }
       
       // 如果提供了upUid，也需验证其格式
-      if (upUid && !/^\d+$/.test(upUid)) {
-        log.warn(`用户提供了非法UP主UID格式: ${upUid}`)
-        await sendMessage(session, [h.text('请提供正确的UP主UID，UID应为纯数字')])
-        return
+      if (upUid) {
+        const cleanUpUid = upUid.replace(/^UID[：:]\s*/, '')
+        if (!/^\d+$/.test(cleanUpUid)) {
+          log.warn(`用户提供了非法UP主UID格式: ${upUid}`)
+          await sendMessage(session, [h.text('请提供正确的UP主UID，UID应为纯数字')])
+          return
+        }
+        upUid = cleanUpUid
       }
 
       // 检查禁止查询列表
-      if (config.blacklistUIDs.includes(uid)) {
-        log.info(`拒绝查询禁止查询列表中的用户 ${uid} 的粉丝勋章`)
+      if (config.blacklistUIDs.includes(cleanUid)) {
+        log.info(`拒绝查询禁止查询列表中的用户 ${cleanUid} 的粉丝勋章`)
         await sendMessage(session, [h.text(`该UID已被设为禁止查询，无法获取其粉丝勋章信息`)])
         return
       }
 
       try {
-        const response = await getMedals(uid)
+        const response = await getMedals(cleanUid)
         
         if (response.code !== 0) {
           log.warn(`API请求失败: 错误码 ${response.code}, 错误信息: ${response.message}`)
@@ -796,7 +803,7 @@ export function apply(ctx: Context, config: Config) {
         }
         
         let { list, count, name } = response.data
-        log.info(`用户 ${name}(${uid}) 的粉丝勋章数量: ${count}`)
+        log.info(`用户 ${name}(${cleanUid}) 的粉丝勋章数量: ${count}`)
         
         // 如果指定了UP主UID，则筛选对应UP主的勋章
         if (upUid) {
@@ -806,8 +813,8 @@ export function apply(ctx: Context, config: Config) {
           list = list.filter(item => item.medal_info.target_id === upUidNum)
           
           if (list.length === 0) {
-            log.info(`用户 ${name}(${uid}) 没有UP主 ${upUid} 的粉丝勋章`)
-            await sendMessage(session, [h.text(`用户 ${name}(${uid}) 没有UP主 ${upUid} 的粉丝勋章`)])
+            log.info(`用户 ${name}(${cleanUid}) 没有UP主 ${upUid} 的粉丝勋章`)
+            await sendMessage(session, [h.text(`用户 ${name}(${cleanUid}) 没有UP主 ${upUid} 的粉丝勋章`)])
             return
           }
           
@@ -825,7 +832,7 @@ export function apply(ctx: Context, config: Config) {
               const loadingMsg = await session.send('正在获取用户粉丝勋章并渲染图片...请稍等~')
               
               // 渲染图片
-              const imageData = await renderMedalsImage(list, name, uid, count, upName, upUid, userIcon)
+              const imageData = await renderMedalsImage(list, name, cleanUid, count, upName, upUid, userIcon)
               
               // 发送图片并撤回加载消息
               await sendMessage(session, [h.image(imageData)])
@@ -877,13 +884,13 @@ export function apply(ctx: Context, config: Config) {
             } catch (error) {
               log.error(`图片渲染失败，退回使用文本模式`, error)
               await sendMessage(session, [
-                h.text(`由于图片渲染服务不可用，以文本模式为您展示：\n\n用户 ${name}(${uid}) 的UP主 ${upName}(${upUid}) 粉丝勋章:\n\n`),
+                h.text(`由于图片渲染服务不可用，以文本模式为您展示：\n\n用户 ${name}(${cleanUid}) 的UP主 ${upName}(${upUid}) 粉丝勋章:\n\n`),
                 h.text(formatMedalInfo(list, true))
               ])
             }
           } else {
             await sendMessage(session, [
-              h.text(`用户 ${name}(${uid}) 的UP主 ${upName}(${upUid}) 粉丝勋章:\n\n`),
+              h.text(`用户 ${name}(${cleanUid}) 的UP主 ${upName}(${upUid}) 粉丝勋章:\n\n`),
               h.text(formatMedalInfo(list, true))
             ])
           }
@@ -892,8 +899,8 @@ export function apply(ctx: Context, config: Config) {
         }
         
         if (count === 0 || !list.length) {
-          log.info(`用户 ${name}(${uid}) 没有粉丝勋章或未公开显示`)
-          await sendMessage(session, [h.text(`用户 ${name}(${uid}) 没有粉丝勋章或未公开显示粉丝勋章`)])
+          log.info(`用户 ${name}(${cleanUid}) 没有粉丝勋章或未公开显示`)
+          await sendMessage(session, [h.text(`用户 ${name}(${cleanUid}) 没有粉丝勋章或未公开显示粉丝勋章`)])
           return
         }
         
@@ -903,7 +910,7 @@ export function apply(ctx: Context, config: Config) {
         // 如果只有1个勋章，提示可能是仅展示佩戴中的勋章
         let additionalMsg = ''
         if (count === 1) {
-          log.info(`用户 ${name}(${uid}) 只有1个粉丝勋章，可能是仅展示佩戴中勋章`)
+          log.info(`用户 ${name}(${cleanUid}) 只有1个粉丝勋章，可能是仅展示佩戴中勋章`)
           additionalMsg = '注意：该用户可能设置了仅展示佩戴中的粉丝勋章\n\n'
         }
         
@@ -914,7 +921,7 @@ export function apply(ctx: Context, config: Config) {
             const loadingMsg = await session.send('正在获取用户粉丝勋章并渲染图片...请稍等~')
             
             // 渲染图片
-            const imageData = await renderMedalsImage(list, name, uid, count, undefined, undefined, userIcon)
+            const imageData = await renderMedalsImage(list, name, cleanUid, count, undefined, undefined, userIcon)
             
             // 发送图片并撤回加载消息
             await sendMessage(session, [h.image(imageData)])
@@ -966,13 +973,13 @@ export function apply(ctx: Context, config: Config) {
           } catch (error) {
             log.error(`图片渲染失败，退回使用文本模式`, error)
             await sendMessage(session, [
-              h.text(`由于图片渲染服务不可用，以文本模式为您展示：\n\n用户 ${name}(${uid}) 的粉丝勋章 (共${count}个):\n${additionalMsg}`),
+              h.text(`由于图片渲染服务不可用，以文本模式为您展示：\n\n用户 ${name}(${cleanUid}) 的粉丝勋章 (共${count}个):\n${additionalMsg}`),
               h.text(formatMedalInfo(list, false))
             ])
           }
         } else {
           await sendMessage(session, [
-            h.text(`用户 ${name}(${uid}) 的粉丝勋章 (共${count}个):\n${additionalMsg}`),
+            h.text(`用户 ${name}(${cleanUid}) 的粉丝勋章 (共${count}个):\n${additionalMsg}`),
             h.text(formatMedalInfo(list, false))
           ])
         }
