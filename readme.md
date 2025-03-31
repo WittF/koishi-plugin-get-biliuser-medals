@@ -2,8 +2,6 @@
 
 适用于 [Koishi](https://koishi.chat) 的B站粉丝勋章查询插件，支持文本和图片两种显示模式。
 
-![示例图片](https://s11.ax1x.com/2024/03/31/pFgVzjA.png)
-
 ## 使用方法
 
 ### 基本命令
