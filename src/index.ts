@@ -733,7 +733,7 @@ export function apply(ctx: Context, config: Config) {
   }
 
   // 注册getmedals命令
-  ctx.command('getmedals <uid:string> [upUid:string]', '获取B站用户粉丝勋章信息')    .option('image', '-i', { fallback: true })
+  ctx.command('getmedals <uid:string> [upUid:string]', '获取B站用户粉丝勋章信息')
     .option('image', '-i', { fallback: false })
     .action(async ({ session, options }, uid, upUid) => {
       // 检查options的值和格式
