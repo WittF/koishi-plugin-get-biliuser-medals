@@ -33,9 +33,9 @@ export const Config: Schema<Config> = Schema.object({
     .default(500),
 })
 
-// 声明插件可选依赖
+// 声明插件必需依赖
 export const inject = {
-  optional: ['canvas'],
+  required: ['canvas'],
 }
 
 // 勋章信息接口
@@ -161,13 +161,8 @@ export function apply(ctx: Context, config: Config) {
   log.info(`插件已启动 ${config.debugMode ? '(调试模式已开启)' : ''}`)
   log.debug('插件配置:', JSON.stringify(config, null, 2))
 
-  // 检查canvas插件是否可用
-  const hasCanvas = !!ctx.canvas
-  if (hasCanvas) {
-    log.info('检测到canvas插件，可使用图片渲染模式')
-  } else {
-    log.info('未检测到canvas插件，无法使用图片渲染模式')
-  }
+  // canvas是必需依赖，确保可用
+  log.info('canvas插件已加载，支持图片渲染模式')
 
   // 创建数据目录
   const dataDir = path.join(ctx.baseDir, 'data', 'biliuser-medals')
@@ -742,17 +737,7 @@ export function apply(ctx: Context, config: Config) {
       // 确保选项正确处理
       const imageOption = !!options.image
       
-      // 检查canvas的可用性
-      log.debug(`canvas可用性: ${hasCanvas ? '可用' : '不可用'}`)
-      
-      const useImage = imageOption && hasCanvas
-      
-      log.info(`收到命令: getmedals ${uid || ''} ${upUid || ''} ${useImage ? '(图片模式)' : '(文本模式)'} [处理后选项值: image=${imageOption}]`)
-      
-      if (!hasCanvas && imageOption) {
-        log.warn('用户请求图片模式，但canvas不可用')
-        await sendMessage(session, [h.text('图片渲染服务不可用，将以文本模式显示结果')])
-      }
+      log.info(`收到命令: getmedals ${uid || ''} ${upUid || ''} ${imageOption ? '(图片模式)' : '(文本模式)'} [处理后选项值: image=${imageOption}]`)
       
       if (!uid) {
         await sendMessage(session, [h.text('请提供正确的B站UID')])
@@ -826,7 +811,7 @@ export function apply(ctx: Context, config: Config) {
           const userIcon = response.data?.icon || '';
 
           // 根据参数决定使用图片渲染还是文本模式
-          if (useImage) {
+          if (imageOption) {
             try {
               // 发送等待消息
               const loadingMsg = await session.send('正在获取用户粉丝勋章并渲染图片...请稍等~')
@@ -915,7 +900,7 @@ export function apply(ctx: Context, config: Config) {
         }
         
         // 根据参数决定使用图片渲染还是文本模式
-        if (useImage) {
+        if (imageOption) {
           try {
             // 发送等待消息
             const loadingMsg = await session.send('正在获取用户粉丝勋章并渲染图片...请稍等~')
